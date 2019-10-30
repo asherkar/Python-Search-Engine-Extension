@@ -1,5 +1,3 @@
-##Assignment 2
-
 #!/usr/bin/env python3
 from invert import Invert
 from porter import PorterStemmer

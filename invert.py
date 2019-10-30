@@ -143,3 +143,22 @@ class Invert:
             stopwords.append(word.rstrip())
         file.close()
         return stopwords
+
+    def format_ranking_list(self):
+        posting_list = self.terms
+        for term, postings in posting_list.items():
+            document_frequency = self.termsDictionary[term]
+            for doc_id, doc_info in postings.items():
+                term_frequency = doc_info['frequency']
+
+
+if __name__ == '__main__':
+    """
+    main function called when ./test.py is called
+    calls the Test class
+    """
+    t = Invert()
+    t.parse_documents
+    t.create_posting_list(False, False)
+    t.format_ranking_list()
+
