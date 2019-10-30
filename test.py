@@ -130,7 +130,7 @@ class Test:
         start_time = time.time()  ##start timer
         processed_query = self.process_query(word)
         for doc_id, term_weights in self.invert.vector_space_dictionary.items():
-
+        # TODO: COSINE SIMILARITY SOMEHOW juse need the dot product
 
         # if self.stemming_toggle:
         #     p = PorterStemmer()
