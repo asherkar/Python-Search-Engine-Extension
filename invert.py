@@ -2,7 +2,7 @@
 import re
 import json
 from porter import PorterStemmer
-
+import math
 
 class Invert:
 
@@ -12,6 +12,7 @@ class Invert:
     documents = {}
     terms = {}
     termsDictionary = {}
+    vector_space_dictionary = {}
 
     def __init__(self):
         """
@@ -145,12 +146,21 @@ class Invert:
         return stopwords
 
     def format_ranking_list(self):
+        vector_space_dictionary =  self.vector_space_dictionary
         posting_list = self.terms
+        all_doc_count = len(self.documents.keys())
         for term, postings in posting_list.items():
             document_frequency = self.termsDictionary[term]
+            idf = math.log(all_doc_count / document_frequency)
             for doc_id, doc_info in postings.items():
-                term_frequency = doc_info['frequency']
+                frequency = doc_info['frequency']
+                term_frequency = 1 + math.log(frequency)
+                term_weight = term_frequency * idf
+                if doc_id not in vector_space_dictionary.keys():
+                    vector_space_dictionary[doc_id] = {}
+                vector_space_dictionary[doc_id][term] = term_weight
 
+        print(vector_space_dictionary)
 
 if __name__ == '__main__':
     """

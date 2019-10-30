@@ -3,6 +3,7 @@ from invert import Invert
 from porter import PorterStemmer
 import json
 import time
+import math
 
 
 class Test:
@@ -37,17 +38,14 @@ class Test:
         """
         data = input('Enter a search term or stopword to toggle stopwords\n')
         while data is not None:
-            word = data.lower().rstrip()
+            query = data.lower().rstrip()
 
-            if len(word.split(' ')) > 1:
-                print('please enter one word')
-
-            elif 'HELP' in data:
+            if 'HELP' in data:
                 print('Enter stopword to toggle the use of stopwords')
                 print('Enter stemming to toggle the use of stemming')
                 print('Enter ZZEND to exit')
 
-            elif 'stopword' in word:
+            elif 'stopword' in query:
                 use_stop_words = input('use stop words? (y/n)\n')
 
                 while use_stop_words is not None:
@@ -66,7 +64,7 @@ class Test:
 
                     use_stop_words = input('please enter y or n\n')
 
-            elif 'stemming' in word:
+            elif 'stemming' in query:
                 use_stemming = input('stem the words? (y/n)\n')
 
                 while use_stemming is not None:
@@ -92,7 +90,7 @@ class Test:
                 exit()
 
             else:
-                self.search_term(word)
+                self.search_term(query)
 
             data = input('Enter a search term or HELP for more options\n')
 
@@ -104,6 +102,7 @@ class Test:
         imports the files created by invert into dictionaries
         """
         self.invert.create_posting_list(self.stopword_toggle, self.stemming_toggle)
+        self.invert.format_ranking_list()
         f = open('posting-list.json', 'r')
         self.posting_list = json.load(f)
         f.close()
@@ -115,7 +114,7 @@ class Test:
         """
         searches for the term provided by the user
         used the stemming toggles to stem the provided term
-        formats the search result to proovide:
+        formats the search result to provide:
             doc_id: id of the document
             title: document title
             term_frequency: number of times the term appeared in documents
@@ -129,52 +128,75 @@ class Test:
                  and the number of documents the term appeared in
         """
         start_time = time.time()  ##start timer
-        if self.stemming_toggle:
-            p = PorterStemmer()
-            word = p.stem(word, 0, len(word) - 1)
+        processed_query = self.process_query(word)
+        for doc_id, term_weights in self.invert.vector_space_dictionary.items():
 
-        if word in self.term_dictionary:
-            found_items = self.posting_list[word]
-            found_documents = []
-            document_ids = found_items.keys()
-            for doc_id in document_ids:
-                position = found_items[doc_id]['position']
-                abstract = self.invert.documents[doc_id]['abstract'].split(' ')
-                first_pos = position[0]
-                start_pos = 0
-                end_pos = len(abstract) -1
-                summary = ''
-                if len(abstract) > 10:
-                    start_pos = first_pos - 5
-                    if start_pos < 0:
-                        start_pos = 0
 
-                    end_pos = start_pos + 10
+        # if self.stemming_toggle:
+        #     p = PorterStemmer()
+        #     word = p.stem(word, 0, len(word) - 1)
+        #
+        # if word in self.term_dictionary:
+        #     found_items = self.posting_list[word]
+        #     found_documents = []
+        #     document_ids = found_items.keys()
+        #     for doc_id in document_ids:
+        #         position = found_items[doc_id]['position']
+        #         abstract = self.invert.documents[doc_id]['abstract'].split(' ')
+        #         first_pos = position[0]
+        #         start_pos = 0
+        #         end_pos = len(abstract) -1
+        #         summary = ''
+        #         if len(abstract) > 10:
+        #             start_pos = first_pos - 5
+        #             if start_pos < 0:
+        #                 start_pos = 0
+        #
+        #             end_pos = start_pos + 10
+        #
+        #             if end_pos > len(abstract) -1:
+        #                 end_pos = len(abstract) -1
+        #                 start_pos = end_pos - 10
+        #
+        #         for term in abstract[start_pos:end_pos]:
+        #             summary += term + ' '
+        #
+        #         document = {
+        #             'doc_id': doc_id,
+        #             'title': self.invert.documents[doc_id]['title'],
+        #             'term frequency': found_items[doc_id]['frequency'],
+        #             'positions': position,
+        #             'summary': summary
+        #         }
+        #         found_documents.append(document)
+        #
+        #     print(json.dumps(found_documents, indent=4, sort_keys=True))
+        #     end_time = time.time()
+        #     search_time = round(end_time - start_time, 3)
+        #     self.search_times.append(search_time)
+        #     print("Found", str(self.term_dictionary[word]), "items in", search_time, "seconds")
+        # else:
+        #     print('No results found for the term ' + word)
 
-                    if end_pos > len(abstract) -1:
-                        end_pos = len(abstract) -1
-                        start_pos = end_pos - 10
+    def process_query(self, query):
+        all_doc_count = len(self.invert.documents.keys())
+        query_array = query.split(' ')
+        query_weights = {}
+        while query_array:
+            word = query_array.pop(0)
+            print(word)
+            frequency = 1
 
-                for term in abstract[start_pos:end_pos]:
-                    summary += term + ' '
+            while word in query_array:
+                query_array.pop(query_array.index_word)
+                frequency += 1
 
-                document = {
-                    'doc_id': doc_id,
-                    'title': self.invert.documents[doc_id]['title'],
-                    'term frequency': found_items[doc_id]['frequency'],
-                    'positions': position,
-                    'summary': summary
-                }
-                found_documents.append(document)
-
-            print(json.dumps(found_documents, indent=4, sort_keys=True))
-            end_time = time.time()
-            search_time = round(end_time - start_time, 3)
-            self.search_times.append(search_time)
-            print("Found", str(self.term_dictionary[word]), "items in", search_time, "seconds")
-        else:
-            print('No results found for the term ' + word)
-
+            document_frequency = self.invert.termsDictionary[word]
+            idf = math.log(all_doc_count / document_frequency)
+            term_frequency = 1 + math.log(frequency)
+            term_weight = idf * term_frequency
+            query_weights[word] = term_weight
+        return query_weights
 
 if __name__ == '__main__':
     """
