@@ -24,7 +24,7 @@ class Test:
         self.invert = Invert()
         self.load_files()
         self.search_user_input()
-        self.k_value = 10
+        #self.k_value = 10
 
     def search_user_input(self):
         """
@@ -130,6 +130,7 @@ class Test:
         :return: prints out the time taken and the results in pretty print json
                  and the number of documents the term appeared in
         """
+        k_value = 10
         start_time = time.time()  ##start timer
         processed_query = self.process_query(word)
         document_ranking = {}
@@ -146,7 +147,7 @@ class Test:
 
         found_documents = []
         for doc_id, similarity in document_ranking.items():
-            if list(document_ranking.keys()).index(doc_id) + 1 == self.k_value:
+            if list(document_ranking.keys()).index(doc_id) + 1 == k_value:
                 break
             if similarity <= 0 or numpy.isnan(similarity):
                 continue
