@@ -37,6 +37,7 @@ class Invert:
 
             if '.I ' in line:
                 doc_id = re.sub('.I ', '', line).rstrip()
+
                 documents[doc_id] = {
                     'id': doc_id,
                     'title': '',
@@ -146,7 +147,7 @@ class Invert:
         return stopwords
 
     def format_ranking_list(self):
-        vector_space_dictionary =  self.vector_space_dictionary
+        vector_space_dictionary = self.vector_space_dictionary
         posting_list = self.terms
         all_doc_count = len(self.documents.keys())
         for term, postings in posting_list.items():
@@ -160,7 +161,8 @@ class Invert:
                     vector_space_dictionary[doc_id] = {}
                 vector_space_dictionary[doc_id][term] = term_weight
 
-        print(vector_space_dictionary)
+        self.vector_space_dictionary = vector_space_dictionary
+
 
 if __name__ == '__main__':
     """

@@ -4,6 +4,8 @@ from porter import PorterStemmer
 import json
 import time
 import math
+import numpy
+import operator
 
 
 class Test:
@@ -22,6 +24,7 @@ class Test:
         self.invert = Invert()
         self.load_files()
         self.search_user_input()
+        self.k_value = 10
 
     def search_user_input(self):
         """
@@ -129,72 +132,75 @@ class Test:
         """
         start_time = time.time()  ##start timer
         processed_query = self.process_query(word)
+        document_ranking = {}
+        query_vector = numpy.sqrt(numpy.sum(numpy.square(list(processed_query.values()))))
         for doc_id, term_weights in self.invert.vector_space_dictionary.items():
-        # TODO: COSINE SIMILARITY SOMEHOW juse need the dot product
+            doc_vector = numpy.sqrt(numpy.sum(numpy.square(list(term_weights.values()))))
+            dot_product = 0
+            for word, weight in processed_query.items():
+                if word in term_weights.keys():
+                    dot_product += (weight * term_weights[word])
+            cosine_similarity = dot_product / (query_vector * doc_vector)
+            document_ranking[doc_id] = cosine_similarity
+        # print(dict(sorted(document_ranking.items(), key=operator.itemgetter(1), reverse=True)))
 
-        # if self.stemming_toggle:
-        #     p = PorterStemmer()
-        #     word = p.stem(word, 0, len(word) - 1)
-        #
-        # if word in self.term_dictionary:
-        #     found_items = self.posting_list[word]
-        #     found_documents = []
-        #     document_ids = found_items.keys()
-        #     for doc_id in document_ids:
-        #         position = found_items[doc_id]['position']
-        #         abstract = self.invert.documents[doc_id]['abstract'].split(' ')
-        #         first_pos = position[0]
-        #         start_pos = 0
-        #         end_pos = len(abstract) -1
-        #         summary = ''
-        #         if len(abstract) > 10:
-        #             start_pos = first_pos - 5
-        #             if start_pos < 0:
-        #                 start_pos = 0
-        #
-        #             end_pos = start_pos + 10
-        #
-        #             if end_pos > len(abstract) -1:
-        #                 end_pos = len(abstract) -1
-        #                 start_pos = end_pos - 10
-        #
-        #         for term in abstract[start_pos:end_pos]:
-        #             summary += term + ' '
-        #
-        #         document = {
-        #             'doc_id': doc_id,
-        #             'title': self.invert.documents[doc_id]['title'],
-        #             'term frequency': found_items[doc_id]['frequency'],
-        #             'positions': position,
-        #             'summary': summary
-        #         }
-        #         found_documents.append(document)
-        #
-        #     print(json.dumps(found_documents, indent=4, sort_keys=True))
-        #     end_time = time.time()
-        #     search_time = round(end_time - start_time, 3)
-        #     self.search_times.append(search_time)
-        #     print("Found", str(self.term_dictionary[word]), "items in", search_time, "seconds")
-        # else:
-        #     print('No results found for the term ' + word)
+        found_documents = []
+        for doc_id, similarity in document_ranking.items():
+            if list(document_ranking.keys()).index(doc_id) + 1 == self.k_value:
+                break
+            if similarity <= 0 or numpy.isnan(similarity):
+                continue
+            document = {
+                'doc_id': doc_id,
+                'title': self.invert.documents[doc_id]['title'],
+                'author': self.invert.documents[doc_id]['author'],
+            }
+            found_documents.append(document)
+
+        if len(found_documents) > 0:
+            print(json.dumps(found_documents, indent=4, sort_keys=True))
+            end_time = time.time()
+            search_time = round(end_time - start_time, 3)
+            self.search_times.append(search_time)
+            print("Found", str(len(found_documents)), "items in", search_time, "seconds")
+        else:
+            print('No results found for the term ' + word)
 
     def process_query(self, query):
         all_doc_count = len(self.invert.documents.keys())
         query_array = query.split(' ')
         query_weights = {}
+        stopwords = []
+        if self.stopword_toggle:
+            stopwords = self.invert.fetch_stopwords()
         while query_array:
             word = query_array.pop(0)
             print(word)
             frequency = 1
 
+            for a in [',', '.', '{', '}', '(', ')', ';', ':', '"', '\'']:
+                if a in word:
+                    if word.index(a) == 0 or word.index(a) == len(word) - 1:
+                        word = word.replace(a, '')
+
             while word in query_array:
-                query_array.pop(query_array.index_word)
+                query_array.pop(query_array.index(word))
                 frequency += 1
 
-            document_frequency = self.invert.termsDictionary[word]
-            idf = math.log(all_doc_count / document_frequency)
-            term_frequency = 1 + math.log(frequency)
-            term_weight = idf * term_frequency
+            if self.stemming_toggle:
+                p = PorterStemmer()
+                word = p.stem(word, 0, len(word) - 1)
+
+            if word in stopwords:
+                continue
+
+            term_weight = 0
+            if word in self.invert.termsDictionary.keys():
+                document_frequency = self.invert.termsDictionary[word]
+                idf = math.log(all_doc_count / document_frequency)
+                term_frequency = 1 + math.log(frequency)
+                term_weight = idf * term_frequency
+
             query_weights[word] = term_weight
         return query_weights
 
