@@ -141,6 +141,9 @@ class Test:
         query_vector = numpy.sqrt(numpy.sum(numpy.square(list(processed_query.values()))))
         for doc_id, term_weights in self.invert.vector_space_dictionary.items():
             doc_vector = numpy.sqrt(numpy.sum(numpy.square(list(term_weights.values()))))
+            if query_vector == 0 or doc_vector == 0:
+                document_ranking[doc_id] = 0.0
+                continue
             dot_product = 0
             for word, weight in processed_query.items():
                 if word in term_weights.keys():
@@ -167,7 +170,7 @@ class Test:
 
     def process_query(self, query):
         all_doc_count = len(self.invert.documents.keys())
-        query_array = query.split(' ')
+        query_array = [x.lower() for x in query.split(' ')]
         query_weights = {}
         stopwords = []
         if self.stopword_toggle:
