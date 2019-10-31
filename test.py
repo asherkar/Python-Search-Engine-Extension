@@ -10,7 +10,7 @@ import operator
 
 class Test:
 
-    def __init__(self):
+    def __init__(self, auto=False):
         """
         main function of the application, sets the
         default values for stopword and stemming
@@ -23,7 +23,8 @@ class Test:
 
         self.invert = Invert()
         self.load_files()
-        self.search_user_input()
+        if not auto:
+            self.search_user_input()
         #self.k_value = 10
 
     def search_user_input(self):

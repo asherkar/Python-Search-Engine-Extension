@@ -10,10 +10,14 @@ def process_cacm_files(file_name):
         next_line = None
 
         if '.I ' in line:
-            id = re.sub('.I ', '', line).rstrip()
+            file_id = re.sub('.I ', '', line).rstrip()
 
-            file[id] = {
-                'id': id
+            file[file_id] = {
+                'id': file_id,
+                'abstract': '',
+                'title': '',
+                'publication': '',
+                'author': ''
             }
             next_line = f.readline()
 
@@ -26,16 +30,16 @@ def process_cacm_files(file_name):
                         abstract += ' ' + next_line.rstrip()
                         next_line = f.readline()
 
-                    file[id]['abstract'] = abstract
+                    file[file_id]['abstract'] = abstract
 
                 if '.T' in next_line:
-                    file[id]['title'] = f.readline().rstrip()
+                    file[file_id]['title'] = f.readline().rstrip()
 
                 if '.B' in next_line:
-                    file[id]['publication'] = f.readline().rstrip()
+                    file[file_id]['publication'] = f.readline().rstrip()
 
                 if '.A' in next_line:
-                    file[id]['author'] = f.readline().rstrip()
+                    file[file_id]['author'] = f.readline().rstrip()
 
                 next_line = f.readline()
 
