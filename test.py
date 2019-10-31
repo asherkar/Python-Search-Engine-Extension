@@ -94,9 +94,32 @@ class Test:
                 exit()
 
             else:
-                self.search_term(query)
-            #     TODO move shit here
+                start_time = time.time()  ##start timer
+                doc_rank = {}
+                doc_rank = self.search_term(query)
+                end_time = time.time() #end timer                            
+                k_value = 10
+                document_ranking = {}
+                found_documents = []
+                for doc_id, similarity in doc_rank.items():
+                    if similarity <= 0 or numpy.isnan(similarity):
+                        continue
+                    document = {
+                        'doc_id': doc_id,
+                        'title': self.invert.documents[doc_id]['title'],
+                        'author': self.invert.documents[doc_id]['author'],
+                    }
+                    found_documents.append(document)
 
+                if len(found_documents) > 0:
+                    print(json.dumps(found_documents[:k_value], indent=4, sort_keys=True))
+                    end_time = time.time()
+                    search_time = round(end_time - start_time, 3)
+                    self.search_times.append(search_time)
+                    print("Found", str(len(found_documents)), "items in", search_time, "seconds")
+                else:
+                    print('No results found for the term ' + query)
+                
             data = input('Enter a search term or HELP for more options\n')
 
     def load_files(self):
@@ -145,27 +168,28 @@ class Test:
                     dot_product += (weight * term_weights[word])
             cosine_similarity = dot_product / (query_vector * doc_vector)
             document_ranking[doc_id] = cosine_similarity
+        return document_ranking 
         # print(dict(sorted(document_ranking.items(), key=operator.itemgetter(1), reverse=True)))
 
-        found_documents = []
-        for doc_id, similarity in document_ranking.items():
-            if similarity <= 0 or numpy.isnan(similarity):
-                continue
-            document = {
-                'doc_id': doc_id,
-                'title': self.invert.documents[doc_id]['title'],
-                'author': self.invert.documents[doc_id]['author'],
-            }
-            found_documents.append(document)
+        # found_documents = []
+        # for doc_id, similarity in document_ranking.items():
+        #     if similarity <= 0 or numpy.isnan(similarity):
+        #         continue
+        #     document = {
+        #         'doc_id': doc_id,
+        #         'title': self.invert.documents[doc_id]['title'],
+        #         'author': self.invert.documents[doc_id]['author'],
+        #     }
+        #     found_documents.append(document)
 
-        if len(found_documents) > 0:
-            print(json.dumps(found_documents[:k_value], indent=4, sort_keys=True))
-            end_time = time.time()
-            search_time = round(end_time - start_time, 3)
-            self.search_times.append(search_time)
-            print("Found", str(len(found_documents)), "items in", search_time, "seconds")
-        else:
-            print('No results found for the term ' + word)
+        # if len(found_documents) > 0:
+        #     print(json.dumps(found_documents[:k_value], indent=4, sort_keys=True))
+        #     end_time = time.time()
+        #     search_time = round(end_time - start_time, 3)
+        #     self.search_times.append(search_time)
+        #     print("Found", str(len(found_documents)), "items in", search_time, "seconds")
+        # else:
+        #     print('No results found for the term ' + word)
 
     def process_query(self, query):
         all_doc_count = len(self.invert.documents.keys())
