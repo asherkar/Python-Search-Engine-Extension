@@ -26,7 +26,8 @@ class Eval:
                     break
                 query['relative_docs'].append(line[1])
                 line = relative_documents.readline().split(' ')
-
+        query_map = []
+        r_precision = []
         for query_id, query in self.queries.items():
             results = self.test.search_term(query['abstract'])
             if len(results) > 0:
@@ -35,9 +36,11 @@ class Eval:
                     if result['doc_id'] in query['relative_docs']:
                         precision = (len(precision_relative_documents) + 1) / (index + 1)
                         precision_relative_documents.append(precision)
-                query_map = numpy.sum(precision_relative_documents) / len(results)
-                r_precision = len(precision_relative_documents) / len(results)
-                print(query_id + ':\n' + 'R_precision: ' + str(r_precision) + '\nmap: ' + str(query_map))
+                query_map.append(numpy.sum(precision) / len(results))
+                r_precision.append(numpy.sum(precision_relative_documents) / len(results))
+
+        print('average R precision: ', str(numpy.sum(r_precision) / len(r_precision)))
+        print('average MAP: ', str(numpy.sum(query_map) / len(query_map)))
 
 
 if __name__ == '__main__':
