@@ -2,7 +2,7 @@
 from invert import Invert
 from porter import PorterStemmer
 import json
-import time
+from util import fetch_stopwords
 import math
 import numpy
 import operator
@@ -174,7 +174,7 @@ class Test:
         query_weights = {}
         stopwords = []
         if self.stopword_toggle:
-            stopwords = self.invert.fetch_stopwords()
+            stopwords = fetch_stopwords()
         while query_array:
             word = query_array.pop(0)
             frequency = 1

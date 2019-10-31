@@ -47,3 +47,18 @@ def process_cacm_files(file_name):
 
     f.close()
     return file
+
+
+def fetch_stopwords():
+    """
+    parses through the file common_words and removed \n
+    from each word.
+
+    :return: stopwords array
+    """
+    file = open('cacm/common_words')
+    stopwords = []
+    for word in file:
+        stopwords.append(word.rstrip())
+    file.close()
+    return stopwords

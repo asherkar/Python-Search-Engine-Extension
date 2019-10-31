@@ -4,6 +4,7 @@ import json
 from porter import PorterStemmer
 import math
 from util import process_cacm_files
+from util import fetch_stopwords
 
 
 class Invert:
@@ -49,7 +50,7 @@ class Invert:
         documents = self.documents
         stopwords = []
         if stopword_toggle:
-            stopwords = self.fetch_stopwords()
+            stopwords = fetch_stopwords()
         for doc_id, document in documents.items():
             if 'abstract' in document:
                 for index, word in enumerate(document['abstract'].split(' ')):
@@ -89,20 +90,6 @@ class Invert:
         f = open('posting-list.json', 'w')
         f.write(json.dumps(self.terms, indent=4, sort_keys=True))
         f.close()
-
-    def fetch_stopwords(self):
-        """
-        parses through the file common_words and removed \n
-        from each word.
-
-        :return: stopwords array
-        """
-        file = open('cacm/common_words')
-        stopwords = []
-        for word in file:
-            stopwords.append(word.rstrip())
-        file.close()
-        return stopwords
 
     def format_ranking_list(self):
         vector_space_dictionary = self.vector_space_dictionary
