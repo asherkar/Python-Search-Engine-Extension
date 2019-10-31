@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from util import process_cacm_files
 from test import Test
+import numpy
 
 
 class Eval:
@@ -29,11 +30,14 @@ class Eval:
         for query_id, query in self.queries.items():
             results = self.test.search_term(query['abstract'])
             if len(results) > 0:
-                fetched_relative_documents = 0
-                for result in results:
+                precision_relative_documents = []
+                for index, result in enumerate(results):
                     if result['doc_id'] in query['relative_docs']:
-                        fetched_relative_documents += 1
-                print(query_id + ':' + str(fetched_relative_documents / len(results)))
+                        precision = (len(precision_relative_documents) + 1) / (index + 1)
+                        precision_relative_documents.append(precision)
+                query_map = numpy.sum(precision_relative_documents) / len(results)
+                r_precision = len(precision_relative_documents) / len(results)
+                print(query_id + ':\n' + 'R_precision: ' + str(r_precision) + '\nmap: ' + str(query_map))
 
 
 if __name__ == '__main__':
