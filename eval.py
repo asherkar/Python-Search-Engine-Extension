@@ -28,13 +28,12 @@ class Eval:
 
         for query_id, query in self.queries.items():
             results = self.test.search_term(query['abstract'])
-            print(results)
             if len(results) > 0:
                 fetched_relative_documents = 0
                 for result in results:
                     if result['doc_id'] in query['relative_docs']:
                         fetched_relative_documents += 1
-                print (query_id + ':' + fetched_relative_documents / len(results))
+                print(query_id + ':' + str(fetched_relative_documents / len(results)))
 
 
 if __name__ == '__main__':
