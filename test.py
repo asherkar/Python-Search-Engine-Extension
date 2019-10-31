@@ -95,6 +95,7 @@ class Test:
 
             else:
                 self.search_term(query)
+            #     TODO move shit here
 
             data = input('Enter a search term or HELP for more options\n')
 
