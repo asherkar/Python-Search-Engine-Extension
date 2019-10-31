@@ -5,3 +5,4 @@
 /.idea/inspectionProfiles/profiles_settings.xml
 /test.json
 /.idea/vcs.xml
+*.pyc

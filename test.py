@@ -147,8 +147,6 @@ class Test:
 
         found_documents = []
         for doc_id, similarity in document_ranking.items():
-            if list(document_ranking.keys()).index(doc_id) + 1 == k_value:
-                break
             if similarity <= 0 or numpy.isnan(similarity):
                 continue
             document = {
@@ -159,7 +157,7 @@ class Test:
             found_documents.append(document)
 
         if len(found_documents) > 0:
-            print(json.dumps(found_documents, indent=4, sort_keys=True))
+            print(json.dumps(found_documents[:k_value], indent=4, sort_keys=True))
             end_time = time.time()
             search_time = round(end_time - start_time, 3)
             self.search_times.append(search_time)

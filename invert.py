@@ -3,9 +3,10 @@ import re
 import json
 from porter import PorterStemmer
 import math
+from util import process_cacm_files
+
 
 class Invert:
-
     f = None
     p = None
     then = None
@@ -29,50 +30,7 @@ class Invert:
 
         :return: documents object containing formatted documents
         """
-        f = open('cacm/cacm.all', 'r')
-        documents = self.documents
-        line = f.readline()
-        while line:
-            next_line = None
-
-            if '.I ' in line:
-                doc_id = re.sub('.I ', '', line).rstrip()
-
-                documents[doc_id] = {
-                    'id': doc_id,
-                    'title': '',
-                    'abstract': '',
-                    'publication': '',
-                    'author': ''
-                }
-                next_line = f.readline()
-
-                while next_line and not ('.I ' in next_line):
-                    if '.W' in next_line:
-                        next_line = f.readline()
-                        abstract = ''
-
-                        while next_line and not re.match(r'[.][A-Z]\s', next_line):
-                            abstract += ' ' + next_line.rstrip()
-                            next_line = f.readline()
-
-                        documents[doc_id]['abstract'] = abstract
-
-                    if '.T' in next_line:
-                        documents[doc_id]['title'] = f.readline().rstrip()
-
-                    if '.B' in next_line:
-                        documents[doc_id]['publication'] = f.readline().rstrip()
-
-                    if '.A' in next_line:
-                        documents[doc_id]['author'] = f.readline().rstrip()
-
-                    next_line = f.readline()
-
-            line = f.readline() if next_line is None else next_line
-
-        f.close()
-        return documents
+        return process_cacm_files(file_name='cacm.all')
 
     def create_posting_list(self, stopword_toggle, stemming_toggle):
         """
@@ -173,4 +131,3 @@ if __name__ == '__main__':
     t.parse_documents
     t.create_posting_list(False, False)
     t.format_ranking_list()
-
