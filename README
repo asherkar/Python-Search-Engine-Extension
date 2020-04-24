@@ -1,3 +1,6 @@
+An extension of Python Search engine, which takes in phrases and provides the location and time. Also displays some Web Retrieval terms 
+and calculations associated to it such as the R-Precision and MAP. 
+
 Instructions to run the program:
 1.	Make sure you have Python 3 installed and in the directory of the assignment folder.
 2.	Compile and run the file “search.py”, using either “terminal” or “command prompt” if on Windows
@@ -8,3 +11,4 @@ Instructions to run the program:
 
 
 The posting lists for the assignment are ordered based on document id. Main reason we decided was because it allowed us to make the program efficient and allowed us to rank the documents which was required for the assignment. We also used top-k retrieval method that sorts everything in a descending order retrieving 10 documents at time and showing its ranking for each doc along with the title of it. The main purpose of top-k retrieval is to rank the items that were found in the search. For the tf and idf the formula provided in the lecture slides was used to calculate the weight for query and documents. 
+
